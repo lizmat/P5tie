@@ -1,6 +1,6 @@
 use v6.c;
 use Test;
-use tie;
+use P5tie;
 
 my @exported = <tie tied untie>.map: '&' ~ *;;
 

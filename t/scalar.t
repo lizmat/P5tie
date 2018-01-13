@@ -1,6 +1,6 @@
 use v6.c;
 use Test;
-use tie;
+use P5tie;
 
 plan 1;
 

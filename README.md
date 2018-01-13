@@ -1,14 +1,14 @@
-[![Build Status](https://travis-ci.org/lizmat/tie.svg?branch=master)](https://travis-ci.org/lizmat/tie)
+[![Build Status](https://travis-ci.org/lizmat/P5tie.svg?branch=master)](https://travis-ci.org/lizmat/P5tie)
 
 NAME
 ====
 
-tie - Implement Perl 5's tie() built-in
+P5tie - Implement Perl 5's tie() built-in
 
 SYNOPSIS
 ========
 
-    use tie; # exports tie(), tied() and untie()
+    use P5tie; # exports tie(), tied() and untie()
 
     tie my $s, Tie::AsScalar;
     tie my $a, Tie::AsArray;
@@ -27,7 +27,7 @@ AUTHOR
 
 Elizabeth Mattijsen <liz@wenzperl.nl>
 
-Source can be located at: https://github.com/lizmat/tie . Comments and Pull Requests are welcome.
+Source can be located at: https://github.com/lizmat/P5tie . Comments and Pull Requests are welcome.
 
 COPYRIGHT AND LICENSE
 =====================

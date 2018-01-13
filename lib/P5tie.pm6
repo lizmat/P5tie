@@ -47,11 +47,11 @@ sub untie(\this) is export { this.untie }
 
 =head1 NAME
 
-tie - Implement Perl 5's tie() built-in
+P5tie - Implement Perl 5's tie() built-in
 
 =head1 SYNOPSIS
 
-  use tie; # exports tie(), tied() and untie()
+  use P5tie; # exports tie(), tied() and untie()
 
   tie my $s, Tie::AsScalar;
   tie my $a, Tie::AsArray;
@@ -74,7 +74,7 @@ efficient way in Perl 6.
 
 Elizabeth Mattijsen <liz@wenzperl.nl>
 
-Source can be located at: https://github.com/lizmat/tie . Comments and
+Source can be located at: https://github.com/lizmat/P5tie . Comments and
 Pull Requests are welcome.
 
 =head1 COPYRIGHT AND LICENSE
