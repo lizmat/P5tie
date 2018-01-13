@@ -38,9 +38,9 @@ tie - Implement Perl 5's tie() built-in
 
   use tie; # exports tie multi sub
 
-  tie my $a, Tie::Foo;
-  tie my @a, Tie::Bar;
-  tie my %h, Tie::Baz;
+  tie my $s, Tie::AsScalar;
+  tie my $a, Tie::AsArray;
+  tie my $h, Tie::AsHash;
 
 =head1 DESCRIPTION
 
