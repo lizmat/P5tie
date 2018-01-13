@@ -8,11 +8,14 @@ tie - Implement Perl 5's tie() built-in
 SYNOPSIS
 ========
 
-    use tie; # exports tie multi sub
+    use tie; # exports tie(), tied() and untie()
 
     tie my $s, Tie::AsScalar;
     tie my $a, Tie::AsArray;
     tie my $h, Tie::AsHash;
+
+    $object = tied $s;
+    untie $s;
 
 DESCRIPTION
 ===========

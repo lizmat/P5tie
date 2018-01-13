@@ -2,14 +2,13 @@ use v6.c;
 use Test;
 use tie;
 
-module Foo {
-    our sub TIESCALAR($class) is raw { my $tied }
-    our sub FETCH(\tied) is raw { tied }
-    our sub STORE(\tied,\value) is raw { tied = value }
-    our sub UNTIE(\tied) is raw { tied } 
-}   
+my @exported = <tie tied untie>.map: '&' ~ *;;
 
-tie( my $a );
-say $a; 
+plan @exported * 2;
 
-done-testing;
+for @exported {
+    ok defined(::($_)), "is $_ imported?";
+    ok !defined(P5tie::{$_}), "is $_ externally NOT accessible?";
+}
+
+# vim: ft=perl6 expandtab sw=4

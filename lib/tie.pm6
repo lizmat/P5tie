@@ -1,8 +1,9 @@
 use v6.c;
-unit module tie:ver<0.0.1>;
+unit module P5tie:ver<0.0.1>;  # must be different from "tie"
 
-sub tie(\subject, $class, *@extra is raw) is export {
+sub tie(\subject, $what, *@extra is raw) is export {
 
+    # for providing tied / untied logic
     role tied  {
         has $.tied;
         method untie() {
@@ -12,20 +13,34 @@ sub tie(\subject, $class, *@extra is raw) is export {
         }
     }
 
-    if ::($class ~ '::&TIESCALAR') -> &tiescalar {
-        my \this  := tiescalar($class,|@extra);
-        my &fetch := ::($class ~ '::&FETCH');
-        my &store := ::($class ~ '::&STORE');
+    # normalize to string and type object
+    my $name  = $what ~~ Str ?? $what !! $what.^name;
+    my $class = ::($name);
+
+    # handle tieing a scalar
+    if ::($name ~ '::&TIESCALAR') -> &tiescalar {
+        my \this  := tiescalar($class, |@extra);
+        my &fetch := ::($name ~ '::&FETCH');
+        my &store := ::($name ~ '::&STORE');
 
         subject = Proxy.new(
-          FETCH => -> $         { fetch(this) },
-          STORE => -> $, \value { store(this,value); fetch(this) }
+          FETCH => -> $ {
+              with fetch(this) { $_   } # already have an instance
+              else             { .new } # need instance for "does"
+          },
+          STORE => -> $, \val { store(this,val); fetch(this) }
         ) does tied(this);
 
         this
     }
+
+    # sprry
+    else {
+        X::NYI.throw( feature => "other types of tie" )
+    }
 }
 
+sub tied(\this)  is export { this.tied }
 sub untie(\this) is export { this.untie }
 
 =begin pod
@@ -36,11 +51,14 @@ tie - Implement Perl 5's tie() built-in
 
 =head1 SYNOPSIS
 
-  use tie; # exports tie multi sub
+  use tie; # exports tie(), tied() and untie()
 
   tie my $s, Tie::AsScalar;
   tie my $a, Tie::AsArray;
   tie my $h, Tie::AsHash;
+
+  $object = tied $s;
+  untie $s;
 
 =head1 DESCRIPTION
 
