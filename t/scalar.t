@@ -22,24 +22,26 @@ sub test-access($sc,$st,$un) {
 }
 
 class Foo {
-    has Int $.tied is rw;
+    has Int $.tied;
 
-    our sub TIESCALAR($class) is raw {
+    our method TIESCALAR() is raw {
         ++$tiescalared;
-        Foo.new
+        self.new
     }
-    our sub FETCH(\object) is raw {
+    our method FETCH() is raw {
         ++$fetched;
-        object.tied
+        $!tied
     }
-    our sub STORE(\object,\value) is raw {
+    our method STORE(\value) is raw {
         ++$stored;
-        object.tied = value
+        $!tied = value
     }
-    our sub UNTIE(\object) is raw {
+    our method UNTIE() is raw {
         ++$untied;
-        object.tied
+        $!tied
     } 
+
+    our method DESTROY() { }
 }
 
 my $object = tie my $a, Foo;
