@@ -14,16 +14,29 @@ sub tie(\subject, $what, *@extra is raw) is export {
     }
 
     # normalize to string and type object
-    my $name  = $what ~~ Str ?? $what !! $what.^name;
-    my $class = ::($name);
+    my $name   = $what ~~ Str ?? $what !! $what.^name;
+    my $class  = ::($name);
+    my $stash := $class.WHO;
+
+    sub check($method, :$test) is raw {
+        if $stash{'&' ~ $method} // $class.can($method)[0] -> &code {
+            &code
+        }
+        elsif $test {
+            Nil
+        }
+        else {
+            die "Could not find '$method' in '$name'";
+        }
+    }
 
     # handle tieing a scalar
-    if ::($name ~ '::&TIESCALAR') -> &tiescalar {
+    if check('TIESCALAR', :test) -> &tiescalar {
         my \this    := tiescalar($class, |@extra);
-        my &fetch   := ::($name ~ '::&FETCH');
-        my &store   := ::($name ~ '::&STORE');
-        my &untie   := ::($name ~ '::&UNTIE');
-        my &destroy := ::($name ~ '::&DESTROY');
+        my &fetch   := check('FETCH');
+        my &store   := check('STORE');
+        my &untie   := check('UNTIE');
+        my &destroy := check('DESTROY');
 
         # This is a bit fragile, but the only way to bind the replace the
         # original container given by the Proxy that we need to actually
@@ -37,7 +50,7 @@ sub tie(\subject, $what, *@extra is raw) is export {
     }
 
     # handle tieing a scalar
-    elsif ::($name ~ '::&TIEARRAY') -> &tiearray {
+    elsif check('TIEARRAY', :test) -> &tiearray {
         my \this := tiearray($class, |@extra);
 
         my class TiedArray does Iterable {
@@ -60,9 +73,6 @@ sub tie(\subject, $what, *@extra is raw) is export {
 
             method new(\tied,\name) { self.CREATE!SET-SELF(tied,name) }
             method !SET-SELF($!tied,$name) {
-                sub check($method) is raw {
-                    ::($name ~ '::&' ~ $method)
-                }
                 &!FETCH     := check('FETCH');
                 &!STORE     := check('STORE');
                 &!FETCHSIZE := check('FETCHSIZE');
