@@ -49,7 +49,7 @@ sub tie(\subject, $what, *@extra is raw) is export {
         this
     }
 
-    # handle tieing a scalar
+    # handle tieing an array
     elsif check('TIEARRAY', :test) -> &tiearray {
         my \this := tiearray($class, |@extra);
 
@@ -152,6 +152,115 @@ sub tie(\subject, $what, *@extra is raw) is export {
         # original container given by the object that we need to actually
         # get the tied behaviour.
         CALLER::CALLER::.BIND-KEY(subject.VAR.name,TiedArray.new(this,$name));
+
+        this
+    }
+
+    # handle tieing a hash
+    elsif check('TIEHASH', :test) -> &tiehash {
+        my \this := tiehash($class, |@extra);
+
+        my class TiedHash does Associative {
+            has $.tied;
+            has &!FETCH;
+            has &!STORE;
+            has &!DELETE;
+            has &!CLEAR;
+            has &!EXISTS;
+            has &!FIRSTKEY;
+            has &!NEXTKEY;
+            has &!SCALAR;
+            has &!UNTIE;
+            has &!DESTROY;
+
+            method new(\tied,\name) { self.CREATE!SET-SELF(tied,name) }
+            method !SET-SELF($!tied,$name) {
+                &!FETCH     := check('FETCH');
+                &!STORE     := check('STORE');
+                &!DELETE    := check('DELETE');
+                &!CLEAR     := check('CLEAR');
+                &!EXISTS    := check('EXISTS');
+                &!FIRSTKEY  := check('FIRSTKEY');
+                &!NEXTKEY   := check('NEXTKEY');
+                &!SCALAR    := check('SCALAR');
+                &!UNTIE     := check('UNTIE');
+                &!DESTROY   := check('DESTROY');
+                self
+            }
+
+            method AT-KEY($key) is raw {
+                Proxy.new(
+                  FETCH => -> $       { &!FETCH($!tied,$key)     },
+                  STORE => -> $, \val { &!STORE($!tied,$key,val) }
+                )
+            }
+            method ASSIGN-KEY($key,\value) is raw { &!STORE($!tied,$key,value) }
+            method BIND-KEY($) {
+                die "Cannot bind to tied Hash, as Perl 5 doesn't know binding"
+            }
+            method DELETE-KEY($key) { &!DELETE($!tied,$key) }
+            method EXISTS-KEY($key) { &!EXISTS($!tied,$key) }
+
+            method elems()          { die }
+
+            method STORE(*@args) {
+                &!CLEAR($!tied);
+                for @args -> $key, \value {
+                    &!STORE($!tied,$key,value)
+                }
+            }
+
+            method iterator(
+              &mapper = -> \key { Pair.new(key,$!tied.AT-KEY(key)) }
+            ) {
+                class :: does Iterator {
+                    has $!tied;
+                    has &!FIRSTKEY;
+                    has &!NEXTKEY;
+                    has &!mapper;
+                    has Mu $!lastkey;
+
+                    method new(\t,\fk,\nk,\ma) { self.CREATE!SET-SELF(t,fk,nk,ma) }
+                    method !SET-SELF($!tied,&!FIRSTKEY,&!NEXTKEY,&!mapper) { self }
+
+                    method pull-one() is raw {
+                        if $!lastkey =:= Mu {       # first time
+                            with $!lastkey := &!FIRSTKEY($!tied) {
+                                &!mapper($_)
+                            }
+                            else {                  # empty hash
+                                IterationEnd
+                            }
+                        }
+                        elsif $!lastkey.defined {   # consecutive time
+                            with $!lastkey := &!NEXTKEY($!tied,$!lastkey) {
+                                &!mapper($_)
+                            }
+                            else {                  # exhausted now
+                                IterationEnd
+                            }
+                        }
+                        else {                      # exhausted before
+                            IterationEnd
+                        }
+                    }
+                }.new($!tied,&!FIRSTKEY,&!NEXTKEY,&mapper)
+            }
+
+            method pairs()  { Seq.new(self.iterator) }
+            method keys()   { Seq.new(self.iterator( { $_ } )) }
+            method values() { Seq.new(self.iterator( { self.AT-KEY($_) } )) }
+            method antipairs() {
+                Seq.new(self.iterator( { Pair.new(self.AT-KEY($_),$_) } ))
+            }
+
+            method untie() { ::($!tied.^name ~ '::&UNTIE')($!tied) }
+        }
+
+        # This is a bit fragile, but the only way to bind the replace the
+        # original container given by the object that we need to actually
+        # get the tied behaviour.
+        CALLER::CALLER::.BIND-KEY(subject.VAR.name,TiedHash.new(this,$name));
 
         this
     }
