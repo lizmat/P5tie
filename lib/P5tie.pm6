@@ -5,7 +5,7 @@ sub tie(\subject, $what, *@extra is raw) is export {
 
     # for providing tied / untied logic
     role tied  {
-        has $.tied;
+        has $.tied is rw;
         method untie() {
             if ::($!tied.^name ~ '::&UNTIE') -> &untie {
                 untie(self)
@@ -23,18 +23,18 @@ sub tie(\subject, $what, *@extra is raw) is export {
         my &fetch := ::($name ~ '::&FETCH');
         my &store := ::($name ~ '::&STORE');
 
-        subject = Proxy.new(
-          FETCH => -> $ {
-              with fetch(this) { $_   } # already have an instance
-              else             { .new } # need instance for "does"
-          },
+        # This is a bit fragile, but the only way to bind the replace the
+        # original container given by the Proxy that we need to actually
+        # get the tied behaviour.
+        CALLER::CALLER::.BIND-KEY(subject.VAR.name,Proxy.new(
+          FETCH => -> $       { fetch(this)                  },
           STORE => -> $, \val { store(this,val); fetch(this) }
-        ) does tied(this);
+        ));
 
         this
     }
 
-    # sprry
+    # sorry
     else {
         X::NYI.throw( feature => "other types of tie" )
     }
