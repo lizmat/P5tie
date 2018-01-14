@@ -88,10 +88,14 @@ sub tie(\subject, $what, *@extra is raw) is export {
                 &!SPLICE    := check('SPLICE');
                 &!UNTIE     := check('UNTIE');
                 &!DESTROY   := check('DESTROY');
+                self
             }
 
             method AT-POS($index) is raw {
-                &!FETCH($!tied,$index)
+                Proxy.new(
+                  FETCH => -> $       { &!FETCH($!tied,$index)     },
+                  STORE => -> $, \val { &!STORE($!tied,$index,val) }
+                )
             }
             method ASSIGN-POS($index,\value) is raw {
                 &!STORE($!tied,$index,value)
@@ -126,7 +130,8 @@ sub tie(\subject, $what, *@extra is raw) is export {
 
                     method new(\t,\fe,\st,\el) { self.CREATE!SET-SELF(t,fe,st,el) }
                     method !SET-SELF($!tied,&!FETCH,&!STORE,$!elems) {
-                        $!index = -1
+                        $!index = -1;
+                        self
                     }
 
                     method pull-one() is raw {
