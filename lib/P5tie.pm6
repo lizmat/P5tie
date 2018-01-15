@@ -3,16 +3,6 @@ unit module P5tie:ver<0.0.1>;  # must be different from "tie"
 
 sub tie(\subject, $what, *@extra is raw) is export {
 
-    # for providing tied / untied logic
-    role tied  {
-        has $.tied is rw;
-        method untie() {
-            if ::($!tied.^name ~ '::&UNTIE') -> &untie {
-                untie(self)
-            }
-        }
-    }
-
     # normalize to string and type object
     my $name   = $what ~~ Str ?? $what !! $what.^name;
     my $class  = ::($name);
@@ -271,9 +261,14 @@ sub tie(\subject, $what, *@extra is raw) is export {
         this
     }
 
+    # handle tieing a handle
+    elsif check('TIEHANDLE', :test) -> &tiehandle {
+        X::NYI.new(feature => "Tieing a file handle").throw
+    }
+
     # sorry
     else {
-        X::NYI.new( feature => "other types of tie" ).throw
+        die "Not obvious which type of tie() is intended";
     }
 }
 
@@ -306,6 +301,38 @@ see the documentation on
 L<Custom Types|https://docs.perl6.org/language/subscripts#Custom_types> for more
 information to handling the needs that Perl 5's C<tie> fulfills in a more
 efficient way in Perl 6.
+
+=head1 PORTING CAVEATS
+
+=head2 Subs versus Methods
+
+In Rakudo Perl 6, the special methods of the tieing class, can be implemented
+as Perl 6 C<method>s, or they can be implemented as C<our sub>s, both are
+perfectly acceptable.  They can even be mixed, if necessary.  But note that
+if you're depending on subclassing, that you must change the C<package> to a
+C<class> to make things work.
+
+=head2 Untieing
+
+Because Rakudo Perl 6 does not have the concept of magic that can be added or
+removed, it is B<not> possible to C<untie> a variable.  Note that the associated
+C<UNTIE> sub/method B<will> be called, so that any resources can be freed.
+
+Potentially it would be possible to actually have any subsequent accesses to the
+tied variable throw an exception: perhaps it will at some point.
+
+=head2 Scalar variable tying versus Proxy
+
+Because tying a scalar in Rakudo Perl 6 B<must> be implemented using a C<Proxy>,
+and it is currently not possible to mix in any additional behaviour into a
+C<Proxy>, it is alas impossible to implement C<UNTIE> and C<DESTROY> for tied
+scalars at this point in time.  Please note that C<UNTIE> and C<DESTROY> B<are>
+supported for tied arrays and hashes.
+
+=head2 Tieing a file handle
+
+Tieing a file handle is not yet implemented at this time.  Mainly because I don't
+grok yet how to do that.  As usual, patches and Pull Requests are welcome!
 
 =head1 AUTHOR
 
