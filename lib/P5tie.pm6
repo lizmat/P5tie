@@ -106,7 +106,8 @@ sub tie(\subject, $what, *@extra is raw) is export {
             method EXISTS-POS($index) { &!EXISTS($!tied,$index) }
             method DELETE-POS($index) { &!DELETE($!tied,$index) }
 
-            method elems()               { &!FETCHSIZE($!tied)     }
+            method elems(--> Int:D)      { &!FETCHSIZE($!tied)     }
+            method Bool(--> Bool:D)      { ?&!FETCHSIZE($!tied)    }
             method push(\value)          { &!PUSH($!tied,value)    }
             method pop()                 { &!POP($!tied)           }
             method shift()               { &!SHIFT($!tied)         }
@@ -201,8 +202,6 @@ sub tie(\subject, $what, *@extra is raw) is export {
             method DELETE-KEY($key) { &!DELETE($!tied,$key) }
             method EXISTS-KEY($key) { &!EXISTS($!tied,$key) }
 
-            method elems()          { die }
-
             method STORE(*@args) {
                 &!CLEAR($!tied);
                 for @args -> $key, \value {
@@ -247,9 +246,16 @@ sub tie(\subject, $what, *@extra is raw) is export {
                 }.new($!tied,&!FIRSTKEY,&!NEXTKEY,&mapper)
             }
 
+            method elems(--> Int:D)  {
+                my int $elems;
+                self.iterator({ ++$elems }).sink-all;
+                $elems
+            }
+            method Bool(--> Bool:D) { &!FIRSTKEY($!tied).defined }
+
             method pairs()  { Seq.new(self.iterator) }
-            method keys()   { Seq.new(self.iterator( { $_ } )) }
-            method values() { Seq.new(self.iterator( { self.AT-KEY($_) } )) }
+            method keys()   { Seq.new(self.iterator: { $_ } ) }
+            method values() { Seq.new(self.iterator: { self.AT-KEY($_) } ) }
             method antipairs() {
                 Seq.new(self.iterator( { Pair.new(self.AT-KEY($_),$_) } ))
             }
