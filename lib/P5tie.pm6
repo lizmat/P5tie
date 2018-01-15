@@ -1,5 +1,5 @@
 use v6.c;
-unit module P5tie:ver<0.0.1>;  # must be different from "tie"
+unit module P5tie:ver<0.0.2>;  # must be different from "tie"
 
 sub tie(\subject, $what, *@extra is raw) is export {
 

@@ -11,8 +11,8 @@ SYNOPSIS
     use P5tie; # exports tie(), tied() and untie()
 
     tie my $s, Tie::AsScalar;
-    tie my $a, Tie::AsArray;
-    tie my $h, Tie::AsHash;
+    tie my @a, Tie::AsArray;
+    tie my %h, Tie::AsHash;
 
     $object = tied $s;
     untie $s;
