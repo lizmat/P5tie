@@ -1,11 +1,9 @@
 use v6.c;
-unit module P5tie:ver<0.0.2>;  # must be different from "tie"
+unit module P5tie:ver<0.0.3>;  # must be different from "tie"
 
-sub tie(\subject, $what, *@extra is raw) is export {
+sub tie(\subject, $class, *@extra is raw) is export {
 
-    # normalize to string and type object
-    my $name   = $what ~~ Str ?? $what !! $what.^name;
-    my $class  = ::($name);
+    # get the stash for easier lookups
     my $stash := $class.WHO;
 
     sub check($method, :$test) is raw {
@@ -16,7 +14,7 @@ sub tie(\subject, $what, *@extra is raw) is export {
             Nil
         }
         else {
-            die "Could not find '$method' in '$name'";
+            die "Could not find '$method' in '{$class.^name}'";
         }
     }
 
@@ -61,8 +59,8 @@ sub tie(\subject, $what, *@extra is raw) is export {
             has &!UNTIE;
             has &!DESTROY;
 
-            method new(\tied,\name) { self.CREATE!SET-SELF(tied,name) }
-            method !SET-SELF($!tied,$name) {
+            method new(\tied) { self.CREATE!SET-SELF(tied) }
+            method !SET-SELF($!tied) {
                 &!FETCH     := check('FETCH');
                 &!STORE     := check('STORE');
                 &!FETCHSIZE := check('FETCHSIZE');
@@ -144,7 +142,7 @@ sub tie(\subject, $what, *@extra is raw) is export {
         # This is a bit fragile, but the only way to bind the replace the
         # original container given by the object that we need to actually
         # get the tied behaviour.
-        CALLER::CALLER::.BIND-KEY(subject.VAR.name,TiedArray.new(this,$name));
+        CALLER::CALLER::.BIND-KEY(subject.VAR.name,TiedArray.new(this));
 
         this
     }
@@ -166,8 +164,8 @@ sub tie(\subject, $what, *@extra is raw) is export {
             has &!UNTIE;
             has &!DESTROY;
 
-            method new(\tied,\name) { self.CREATE!SET-SELF(tied,name) }
-            method !SET-SELF($!tied,$name) {
+            method new(\tied) { self.CREATE!SET-SELF(tied) }
+            method !SET-SELF($!tied) {
                 &!FETCH     := check('FETCH');
                 &!STORE     := check('STORE');
                 &!DELETE    := check('DELETE');
@@ -260,7 +258,7 @@ sub tie(\subject, $what, *@extra is raw) is export {
         # This is a bit fragile, but the only way to bind the replace the
         # original container given by the object that we need to actually
         # get the tied behaviour.
-        CALLER::CALLER::.BIND-KEY(subject.VAR.name,TiedHash.new(this,$name));
+        CALLER::CALLER::.BIND-KEY(subject.VAR.name,TiedHash.new(this));
 
         this
     }
