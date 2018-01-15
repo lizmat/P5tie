@@ -136,6 +136,8 @@ sub tie(\subject, $what, *@extra is raw) is export {
                 }.new($!tied,&!FETCH,&!STORE,&!FETCHSIZE(self))
             }
 
+            method DESTROY() { &!DESTROY($!tied) }
+
             method untie() { ::($!tied.^name ~ '::&UNTIE')($!tied) }
         }
 
@@ -250,6 +252,8 @@ sub tie(\subject, $what, *@extra is raw) is export {
                 Seq.new(self.iterator( { Pair.new(self.AT-KEY($_),$_) } ))
             }
 
+            method DESTROY() { &!DESTROY($!tied) }
+
             method untie() { ::($!tied.^name ~ '::&UNTIE')($!tied) }
         }
 
@@ -286,8 +290,8 @@ P5tie - Implement Perl 5's tie() built-in
   use P5tie; # exports tie(), tied() and untie()
 
   tie my $s, Tie::AsScalar;
-  tie my $a, Tie::AsArray;
-  tie my $h, Tie::AsHash;
+  tie my @a, Tie::AsArray;
+  tie my %h, Tie::AsHash;
 
   $object = tied $s;
   untie $s;
