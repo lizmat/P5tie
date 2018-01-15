@@ -6,4 +6,4 @@
 /resources/*.dylib
 .precomp/
 /releases/
-/tie-*
+/P5tie-*
