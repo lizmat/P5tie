@@ -7,6 +7,7 @@ sub tie(\subject, $class, *@extra is raw) is export {
     my $stash := $class.WHO;
     my $name  := subject.VAR.name;
 
+    # fetch API sub / method from given class
     sub check($method, :$test) is raw {
         if $stash{'&' ~ $method} // $class.can($method)[0] -> &code {
             &code
@@ -19,6 +20,7 @@ sub tie(\subject, $class, *@extra is raw) is export {
         }
     }
 
+    # generic prefix for .perl methods
     sub perl-preamble(--> Str:D) { "tie my $name, {$class.^name}; $name = " }
 
     # handle tieing a scalar
@@ -122,7 +124,9 @@ sub tie(\subject, $class, *@extra is raw) is export {
                     has int $!elems;
                     has int $!index;
 
-                    method new(\t,\fe,\st,\el) { self.CREATE!SET-SELF(t,fe,st,el) }
+                    method new(\t,\fe,\st,\el) {
+                        self.CREATE!SET-SELF(t,fe,st,el)
+                    }
                     method !SET-SELF($!tied,&!FETCH,&!STORE,$!elems) {
                         $!index = -1;
                         self
@@ -230,8 +234,12 @@ sub tie(\subject, $class, *@extra is raw) is export {
                     has &!mapper;
                     has Mu $!lastkey;
 
-                    method new(\t,\fk,\nk,\ma) { self.CREATE!SET-SELF(t,fk,nk,ma) }
-                    method !SET-SELF($!tied,&!FIRSTKEY,&!NEXTKEY,&!mapper) { self }
+                    method new(\t,\fk,\nk,\ma) {
+                        self.CREATE!SET-SELF(t,fk,nk,ma)
+                    }
+                    method !SET-SELF($!tied,&!FIRSTKEY,&!NEXTKEY,&!mapper) {
+                        self
+                    }
 
                     method pull-one() is raw {
                         if $!lastkey =:= Mu {       # first time
