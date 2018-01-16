@@ -13,3 +13,7 @@ removed some more now redundant code.
 Apparently we also need a Numeric method, to handle +@a and +%h.
 .STORE is supposed to return self
 Added some stringification methods: .Str, .perl and .join.
+
+# Version 0.0.5
+Fixed .perl for tied arrays, added .gist method
+Added .Str, .perl, .gist, .join for tied hashes
