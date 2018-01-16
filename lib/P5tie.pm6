@@ -1,5 +1,5 @@
 use v6.c;
-unit module P5tie:ver<0.0.3>;  # must be different from "tie"
+unit module P5tie:ver<0.0.4>;  # must be different from "tie"
 
 sub tie(\subject, $class, *@extra is raw) is export {
 
@@ -96,6 +96,7 @@ sub tie(\subject, $class, *@extra is raw) is export {
 
             method elems(--> Int:D)      { &!FETCHSIZE($!tied)     }
             method Bool(--> Bool:D)      { ?&!FETCHSIZE($!tied)    }
+            method Numeric(--> Int:D)    { &!FETCHSIZE($!tied)     }
             method push(\value)          { &!PUSH($!tied,value)    }
             method pop()                 { &!POP($!tied)           }
             method shift()               { &!SHIFT($!tied)         }
@@ -107,6 +108,7 @@ sub tie(\subject, $class, *@extra is raw) is export {
                 for @args.kv -> $index, \value {
                     &!STORE($!tied,$index,value)
                 }
+                self
             }
 
             method iterator() {
@@ -132,6 +134,25 @@ sub tie(\subject, $class, *@extra is raw) is export {
                           !! IterationEnd
                     }
                 }.new($!tied,&!FETCH,&!STORE,&!FETCHSIZE(self))
+            }
+
+            method join($delimiter = "" --> Str:D) {
+                my str @strings;
+                @strings.push(&!FETCH($!tied,$_).Str) for ^&!FETCHSIZE($!tied);
+                @strings.join($delimiter)
+            }
+
+            method Str(--> Str:D) { self.join(" ") }
+
+            method perl(--> Str:D) {
+                my str @strings;
+                @strings.push(&!FETCH($!tied,$_).perl) for ^&!FETCHSIZE($!tied);
+                '(tie '
+                  ~ subject.VAR.name
+                  ~ ', '
+                  ~ $class.^name
+                  ~ ') = '
+                  ~ @strings.join(",")
             }
 
             method DESTROY() { &!DESTROY($!tied) }
@@ -197,6 +218,7 @@ sub tie(\subject, $class, *@extra is raw) is export {
                 for @args -> $key, \value {
                     &!STORE($!tied,$key,value)
                 }
+                self
             }
 
             method iterator(
@@ -242,6 +264,7 @@ sub tie(\subject, $class, *@extra is raw) is export {
                 $elems
             }
             method Bool(--> Bool:D) { &!FIRSTKEY($!tied).defined }
+            method Numeric(--> Int:D) { self.elems }
 
             method pairs()  { Seq.new(self.iterator) }
             method keys()   { Seq.new(self.iterator: { $_ } ) }
