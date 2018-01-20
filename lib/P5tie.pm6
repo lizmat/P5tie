@@ -99,13 +99,21 @@ sub tie(\subject, $class, *@extra is raw) is export {
             method EXISTS-POS($index) { &!EXISTS($!tied,$index) }
             method DELETE-POS($index) { &!DELETE($!tied,$index) }
 
-            method elems(--> Int:D)      { &!FETCHSIZE($!tied)     }
-            method Bool(--> Bool:D)      { ?&!FETCHSIZE($!tied)    }
-            method Numeric(--> Int:D)    { &!FETCHSIZE($!tied)     }
-            method push(\value)          { &!PUSH($!tied,value)    }
-            method pop()                 { &!POP($!tied)           }
-            method shift()               { &!SHIFT($!tied)         }
-            method unshift(\value)       { &!UNSHIFT($!tied,value) }
+            method elems(--> Int:D)   { &!FETCHSIZE($!tied)     }
+            method Bool(--> Bool:D)   { ?&!FETCHSIZE($!tied)    }
+            method Numeric(--> Int:D) { &!FETCHSIZE($!tied)     }
+
+            method pop()   is raw { &!POP($!tied)   }
+            method shift() is raw { &!SHIFT($!tied) }
+
+            method push(\value) {
+                &!PUSH($!tied,value);
+                &!FETCHSIZE($!tied)
+            }
+            method unshift(\value) {
+                &!UNSHIFT($!tied,value);
+                &!FETCHSIZE($!tied)
+            }
             method splice(*@args is raw) { &!SPLICE($!tied,|@args) }
 
             method STORE(*@args) {
