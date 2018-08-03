@@ -1,6 +1,6 @@
 use v6.c;
 
-unit module P5tie:ver<0.0.9>:auth<cpan:ELIZABETH>;
+unit module P5tie:ver<0.0.10>:auth<cpan:ELIZABETH>;
 
 sub tie(\subject, $class, *@extra is raw) is export {
 
