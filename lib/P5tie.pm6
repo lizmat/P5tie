@@ -1,6 +1,6 @@
 use v6.c;
 
-unit module P5tie:ver<0.0.10>:auth<cpan:ELIZABETH>;
+unit module P5tie:ver<0.0.11>:auth<cpan:ELIZABETH>;
 
 sub tie(\subject, $class, *@extra is raw) is export {
 
@@ -125,31 +125,32 @@ sub tie(\subject, $class, *@extra is raw) is export {
                 self
             }
 
+            class Iterate does Iterator {
+                has $!tied;
+                has &!FETCH;
+                has &!STORE;
+                has int $!elems;
+                has int $!index;
+
+                method new(\t,\fe,\st,\el) {
+                    self.CREATE!SET-SELF(t,fe,st,el)
+                }
+                method !SET-SELF($!tied,&!FETCH,&!STORE,$!elems) {
+                    $!index = -1;
+                    self
+                }
+
+                method pull-one() is raw {
+                    ++$!index < $!elems
+                      ?? Proxy.new(
+                           FETCH => -> $       { &!FETCH($!tied,$!index)     },
+                           STORE => -> $, \val { &!STORE($!tied,$!index,val) }
+                         )
+                      !! IterationEnd
+                }
+            }
             method iterator() {
-                class :: does Iterator {
-                    has $!tied;
-                    has &!FETCH;
-                    has &!STORE;
-                    has int $!elems;
-                    has int $!index;
-
-                    method new(\t,\fe,\st,\el) {
-                        self.CREATE!SET-SELF(t,fe,st,el)
-                    }
-                    method !SET-SELF($!tied,&!FETCH,&!STORE,$!elems) {
-                        $!index = -1;
-                        self
-                    }
-
-                    method pull-one() is raw {
-                        ++$!index < $!elems
-                          ?? Proxy.new(
-                               FETCH => -> $       { &!FETCH($!tied,$!index)     },
-                               STORE => -> $, \val { &!STORE($!tied,$!index,val) }
-                             )
-                          !! IterationEnd
-                    }
-                }.new($!tied,&!FETCH,&!STORE,&!FETCHSIZE(self))
+                Iterate.new($!tied,&!FETCH,&!STORE,&!FETCHSIZE(self))
             }
 
             method join($delimiter = "" --> Str:D) {
@@ -233,41 +234,42 @@ sub tie(\subject, $class, *@extra is raw) is export {
                 self
             }
 
+            class Iterate does Iterator {
+                has $!tied;
+                has &!FIRSTKEY;
+                has &!NEXTKEY;
+                has &!mapper;
+                has $!lastkey;
+
+                method new(\t,\fk,\nk,\ma) {
+                    self.CREATE!SET-SELF(t,fk,nk,ma)
+                }
+                method !SET-SELF($!tied,&!FIRSTKEY,&!NEXTKEY,&!mapper) {
+                    $!lastkey := Mu;
+                    self
+                }
+
+                method pull-one() is raw {
+                    use fatal;
+                    if $!lastkey =:= Mu {       # first time
+                        ($!lastkey := &!FIRSTKEY($!tied)) =:= Nil
+                          ?? IterationEnd         # empty hash
+                          !! &!mapper($!lastkey)  # first element
+                    }
+                    elsif $!lastkey =:= Nil {   # exhausted before
+                        IterationEnd
+                    }
+                    else {                      # not exhausted yet
+                        ($!lastkey := &!NEXTKEY($!tied,$!lastkey)) =:= Nil
+                          ?? IterationEnd         # exhausted now
+                          !! &!mapper($!lastkey)  # next element
+                    }
+                }
+            }
             method iterator(
               &mapper = -> \key { Pair.new(key,&!FETCH($!tied,key)) }
             ) {
-                class :: does Iterator {
-                    has $!tied;
-                    has &!FIRSTKEY;
-                    has &!NEXTKEY;
-                    has &!mapper;
-                    has $!lastkey;
-
-                    method new(\t,\fk,\nk,\ma) {
-                        self.CREATE!SET-SELF(t,fk,nk,ma)
-                    }
-                    method !SET-SELF($!tied,&!FIRSTKEY,&!NEXTKEY,&!mapper) {
-                        $!lastkey := Mu;
-                        self
-                    }
-
-                    method pull-one() is raw {
-                        use fatal;
-                        if $!lastkey =:= Mu {       # first time
-                            ($!lastkey := &!FIRSTKEY($!tied)) =:= Nil
-                              ?? IterationEnd         # empty hash
-                              !! &!mapper($!lastkey)  # first element
-                        }
-                        elsif $!lastkey =:= Nil {   # exhausted before
-                            IterationEnd
-                        }
-                        else {                      # not exhausted yet
-                            ($!lastkey := &!NEXTKEY($!tied,$!lastkey)) =:= Nil
-                              ?? IterationEnd         # exhausted now
-                              !! &!mapper($!lastkey)  # next element
-                        }
-                    }
-                }.new($!tied,&!FIRSTKEY,&!NEXTKEY,&mapper)
+                Iterate.new($!tied,&!FIRSTKEY,&!NEXTKEY,&mapper)
             }
 
             method elems(--> Int:D)  {
