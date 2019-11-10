@@ -5,7 +5,7 @@
   ],
   "build-depends" : [ ],
   "depends" : [ ],
-  "description" : "Implement Perl 5's tie() built-in",
+  "description" : "Implement Perl's tie() built-in",
   "license" : "Artistic-2.0",
   "name" : "P5tie",
   "perl" : "6.c",
@@ -19,5 +19,5 @@
     "CPAN5"
   ],
   "test-depends" : [ ],
-  "version" : "0.0.11"
+  "version" : "0.0.12"
 }
