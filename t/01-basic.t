@@ -2,6 +2,8 @@ use v6.c;
 use Test;
 use P5tie;
 
+die;
+
 my @exported = <tie tied untie>.map: '&' ~ *;;
 
 plan @exported * 2;
