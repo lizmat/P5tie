@@ -1,4 +1,4 @@
-use v6.c;
+use v6.*;
 use Test;
 use P5tie;
 
@@ -101,4 +101,4 @@ for @interfaces -> $class {
     test-access(:1store);
 }
 
-# vim: ft=perl6 expandtab sw=4
+# vim: expandtab shiftwidth=4

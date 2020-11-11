@@ -1,7 +1,6 @@
-use v6.c;
+use v6.*;
 
-
-unit module P5tie:ver<0.0.12>:auth<cpan:ELIZABETH>;
+unit module P5tie:ver<0.0.13>:auth<cpan:ELIZABETH>;
 
 sub tie(\subject, $class, *@extra is raw) is export {
 
@@ -332,7 +331,7 @@ sub untie(\this) is export { this.untie }
 
 =head1 NAME
 
-P5tie - Implement Perl's tie() built-in
+Raku port of Perl's tie() built-in
 
 =head1 SYNOPSIS
 
@@ -347,8 +346,8 @@ P5tie - Implement Perl's tie() built-in
 
 =head1 DESCRIPTION
 
-This module tries to mimic the behaviour of C<tie> and related functions of
-Perl as closely as possible.
+This module tries to mimic the behaviour of Perl's C<tie> and related
+built-ins as closely as possible in the Raku Programming Language.
 
 =head1 ORIGINAL PERL 5 DOCUMENTATION
 
@@ -506,10 +505,12 @@ Pull Requests are welcome.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2018-2019 Elizabeth Mattijsen
+Copyright 2018-2020 Elizabeth Mattijsen
 
 Re-imagined from Perl as part of the CPAN Butterfly Plan.
 
 This library is free software; you can redistribute it and/or modify it under the Artistic License 2.0.
 
 =end pod
+
+# vim: expandtab shiftwidth=4

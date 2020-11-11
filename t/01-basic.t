@@ -1,4 +1,4 @@
-use v6.c;
+use v6.*;
 use Test;
 use P5tie;
 
@@ -11,4 +11,4 @@ for @exported {
     ok !defined(P5tie::{$_}), "is $_ externally NOT accessible?";
 }
 
-# vim: ft=perl6 expandtab sw=4
+# vim: expandtab shiftwidth=4
