@@ -1,3 +1,5 @@
+[![Actions Status](https://github.com/lizmat/P5tie/workflows/test/badge.svg)](https://github.com/lizmat/P5tie/actions)
+
 NAME
 ====
 
@@ -159,14 +161,14 @@ Tieing a file handle is not yet implemented at this time. Mainly because I don't
 AUTHOR
 ======
 
-Elizabeth Mattijsen <liz@wenzperl.nl>
+Elizabeth Mattijsen <liz@raku.rocks>
 
 Source can be located at: https://github.com/lizmat/P5tie . Comments and Pull Requests are welcome.
 
 COPYRIGHT AND LICENSE
 =====================
 
-Copyright 2018-2020 Elizabeth Mattijsen
+Copyright 2018, 2019, 2020, 2021 Elizabeth Mattijsen
 
 Re-imagined from Perl as part of the CPAN Butterfly Plan.
 

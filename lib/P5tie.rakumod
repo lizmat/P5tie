@@ -1,6 +1,6 @@
 use v6.*;
 
-unit module P5tie:ver<0.0.13>:auth<cpan:ELIZABETH>;
+unit module P5tie:ver<0.0.14>:auth<zef:lizmat>;
 
 sub tie(\subject, $class, *@extra is raw) is export {
 
@@ -498,14 +498,14 @@ don't grok yet how to do that.  As usual, patches and Pull Requests are welcome!
 
 =head1 AUTHOR
 
-Elizabeth Mattijsen <liz@wenzperl.nl>
+Elizabeth Mattijsen <liz@raku.rocks>
 
 Source can be located at: https://github.com/lizmat/P5tie . Comments and
 Pull Requests are welcome.
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2018-2020 Elizabeth Mattijsen
+Copyright 2018, 2019, 2020, 2021 Elizabeth Mattijsen
 
 Re-imagined from Perl as part of the CPAN Butterfly Plan.
 
